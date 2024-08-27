@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "name": "Â2𝗚 Connect",
+  "version": "1.1",
+  "description": "Customize wormate.io appearance and functionalities, team chat.",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://wormate.io/*"],
+      "js": ["jquery.min.js", "content.js"]
+    },
+    {
+      "matches": ["https://wormworld.io/*"],
+      "js": ["contentwwc.js"]
+    }
+  ],
+  "host_permissions": [
+      "https://wormate.io/*",
+      "https://wormworld.io/*",
+      "https://www.facebook.com/*",
+      "https://www.paypal.com/*",
+      "http://45.173.12.90:3000/*",
+      "https://www.iconfinder.com/*",
+      "http://localhost:3000/*",
+      "http://192.168.205.243:3000/*"
+    ],
+  "web_accessible_resources": [
+    {
+      "resources": ["banner.png", "popup.js", "custom_game.js", "frame.html", "frame.js"],
+      "matches": ["https://wormate.io/*"]
+    }
+  ]
+}
