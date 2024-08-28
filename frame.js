@@ -1,4 +1,7 @@
-
+function obtenerIP() {
+  return 'http://localhost:3000';
+  //return 'http://45.173.12.90:3000';
+}
 //---------------Chat------------------------------------------
 
 document.body.style.margin = 0;
@@ -252,8 +255,3 @@ setInterval(() => {
   })
 }, 5000);
 
-function obtenerIP() {
-  //return 'http://localhost:3000';
-  //return 'http://192.168.205.243:3000';
-  return 'http://45.173.12.90:3000';
-}
