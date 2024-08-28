@@ -1,6 +1,6 @@
 function obtenerIP() {
-  return 'http://localhost:3000';
-  //return 'http://45.173.12.90:3000';
+  //return 'http://localhost:3000';
+  return 'http://45.173.12.90:3000';
 }
 //---------------Chat------------------------------------------
 
