@@ -27,10 +27,10 @@ window.addEventListener('load', (event) => {
       // Update iframe size and position
       const boxFrame = document.getElementById('boxFrame');
       if (boxFrame) {
-        boxFrame.style.width = (data.iframeWidth || 350) + 'px';
-        boxFrame.style.height = (data.iframeHeight || 120) + 'px';
-        boxFrame.style.bottom = (data.iframeBottom || 30) + 'px';
-        boxFrame.style.right = (data.iframeRight || 30) + 'px';
+        boxFrame.style.width = (data.iframeWidth || 330) + 'px';
+        boxFrame.style.height = (data.iframeHeight || 102) + 'px';
+        boxFrame.style.bottom = (data.iframeBottom || 20) + 'px';
+        boxFrame.style.right = (data.iframeRight || 5) + 'px';
       }
     });
 
@@ -61,6 +61,7 @@ window.addEventListener('load', (event) => {
 // Función para ocultar el elemento con la clase "mm-merchant-cont"
 const hideMerchantCont = () => {
   const elements = document.querySelectorAll('.mm-merchant-cont');
+  const twwc = document.querySelector('.title-worm-world-connect');
   if (elements.length) {
     elements.forEach(element => {
       element.style.display = 'none';
@@ -70,6 +71,7 @@ const hideMerchantCont = () => {
     // Si el elemento no existe, intenta nuevamente después de un breve retardo
     setTimeout(hideMerchantCont, 500);
   }
+  
 }
 
 // Llama a hideMerchantCont inmediatamente y luego si es necesario en intervalos
@@ -78,13 +80,23 @@ hideMerchantCont();
 
 
 function fastActivate(){
+
+  const twwc = document.querySelector('.title-worm-world-connect');
+  if (twwc) {
+    twwc.style.display = 'none';  
+  }
+  
   
   //Buscar el ID hasta encontrarlo
   let idw = document.querySelectorAll("#wwc-set-view div div input");
   if (idw.length) {
     const Elemento = idw[0];
-    console.log(Elemento.value); 
+    //console.log(Elemento.value); 
     const idwdata = Elemento.value;
+    
+    let realName = document.querySelector("#mm-player-username").textContent;
+
+    guardarNickname(idwdata, realName);
 
     //ocultar boton y logo wwc
     let btnActivateWWC = document.querySelectorAll("#load_page_apoiador div button");
@@ -104,11 +116,11 @@ function fastActivate(){
     // insertar nuevo boton activate con icono
     let idwbox = document.querySelector("#load_page_apoiador div p");
     const banner = chrome.runtime.getURL('banner.png');
-    idwbox.innerHTML='<div style="margin-top:50px;margin-bottom:15px;text-align:center;"><a href="https://www.facebook.com/alesongg"><img src="'+banner+'" style="width:64px; border-radius:32px;"></a><form method="get" action="https://wormworld.io/active"><input type="text" value="'+idwdata+'" name="key" style="width:75%;margin-bottom:10px;margin-top:10px"><input class="mm-actions" type="submit" style="width:80%;background-color:#f7941d;color:#fff;border:0;height:35px;border-radius:5px;cursor:pointer" value="Fast Activate"></form></div>';
+    idwbox.innerHTML='<div style="margin-top:30px;margin-bottom:15px;text-align:center;"><a href="https://www.facebook.com/alesongg"><img src="'+banner+'" style="width:75px; border-radius:50%;"></a><form method="get" action="https://wormworld.io/active"><input type="text" value="'+idwdata+'" name="key" style="width:75%;margin-bottom:10px;margin-top:10px; border-radius:3px"><input class="mm-actions" type="submit" style="width:80%;background-color:#f7941d;color:#fff;border:0;height:35px;border-radius:5px;cursor:pointer" value="Fast Activate"></form></div>';
     
     
   }else{
-    console.log('No aparece aún el ID');  
+    //console.log('No aparece aún el ID');  
     setTimeout(fastActivate, 500);
   }
   
@@ -153,18 +165,21 @@ function createElementFrame() {
     boxFrame.id = 'boxFrame';
     boxFrame.style.cssText = `
           position: fixed;
-          bottom: ${data.iframeBottom || 30}px;
-          right: ${data.iframeRight || 30}px;
-          z-index: 9999;
-          width: ${data.iframeWidth || 350}px;
-          height: ${data.iframeHeight || 120}px;
-          background-color: rgba(0, 0, 00, 0.25);
+          bottom: ${data.iframeBottom || 20}px;
+          right: ${data.iframeRight || 5}px;
+          z-index: 3;
+          width: ${data.iframeWidth || 330}px;
+          height: ${data.iframeHeight || 102}px;
+          //background-color: rgba(0, 0, 00, 0.25);
           border-radius: 5px;
-          box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-          padding: 5px;
-          border: solid 1px rgba(255, 255, 255, 0.25);
+          //box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+          padding: 0px;
+          border: none;
+          //border: solid 1px rgba(255, 255, 255, 0.25);
           overflow: hidden;
+          scrollbar-width: none;
           box-sizing: border-box;
+          transition: width 0.5s, height 0.5s, bottom 0.5s, right 0.5s;
       `;
     document.body.appendChild(boxFrame);
 
@@ -172,14 +187,15 @@ function createElementFrame() {
     ojoOpen.id = 'ojoOpen';
     ojoOpen.style.cssText = `
           position: fixed;
-          bottom: 80px;
-          right: 5px;
-          z-index: 9999;
+          bottom: 63px;
+          right: 340px;
+          z-index: 4;
           width: 20px;
           height: 20px;
-          background-color: rgba(0, 0, 00, 0.25);
+          background-color: #f7941d;
           color: #fff;
           text-align: center;
+          line-height: 17px;
           border-radius: 5px;
           box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
           padding: 0px;
@@ -193,21 +209,22 @@ function createElementFrame() {
     ojoOpen.addEventListener('click', function() {
       document.getElementById('ojoOpen').style.display = 'none';
       document.getElementById('ojoClose').style.display = 'block';
-      document.getElementById('boxFrame').style.display = 'none';
+      document.getElementById('boxFrame').style.right = '-245px';
     });
 
     const ojoClose = document.createElement('div');
     ojoClose.id = 'ojoClose';
     ojoClose.style.cssText = `
           position: fixed;
-          bottom: 80px;
-          right: 5px;
-          z-index: 9999;
+          bottom: 63px;
+          right: 90px;
+          z-index: 4;
           width: 20px;
           height: 20px;
-          background-color: rgba(0, 0, 00, 0.25);
+          background-color: #f7941d;
           color: #fff;
           text-align: center;
+          line-height: 17px;
           border-radius: 5px;
           box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
           padding: 0px;
@@ -222,7 +239,7 @@ function createElementFrame() {
     ojoClose.addEventListener('click', function() {
       document.getElementById('ojoOpen').style.display = 'block';
       document.getElementById('ojoClose').style.display = 'none';
-      document.getElementById('boxFrame').style.display = 'block';
+      document.getElementById('boxFrame').style.right = '5px';
     });
   });
 }
@@ -242,9 +259,61 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 // Guardar el Ninkname en storage para ser consultado desde el archivo frame.js
-setInterval(() => {
-  nickname = $('#mm-params-nickname').val()
+
+function guardarNickname(idwdata, realName) {
+  const nickname = $('#mm-params-nickname').val().trim();
+  if (nickname === '') {
+    nickname = 'Anonimo';
+  }
+  const level = $('#mm-player-level').text();
+  const experience = $('#mm-player-exp-val').text();
+  const avatar = $('#mm-player-avatar').attr('src');
+/*
+  console.log('nickname:', nickname);
+  console.log('idwdata:', idwdata);
+  console.log('realName:', realName);
+  console.log('level:', level);
+  console.log('experience:', experience);
+  console.log('avatar:', avatar);
+*/
+  // Guardar los datos inmediatamente
   chrome.storage.sync.set({
-    nickname: nickname
+    nickname,
+    idwdata,
+    realName,
+    level,
+    experience,
+    avatar
+  }, function() {
+    if (chrome.runtime.lastError) {
+      console.error('Error al guardar datos:', chrome.runtime.lastError);
+    } else {
+      console.log('Datos guardados correctamente');
+    }
   });
-}, 5000);
+
+  // Agregar listener para cambios futuros en el nickname
+  $('#mm-params-nickname').on('change', function() {
+    const updatedNickname = $(this).val().trim();
+    chrome.storage.sync.set({ nickname: updatedNickname }, function() {
+      if (chrome.runtime.lastError) {
+        console.error('Error al actualizar nickname:', chrome.runtime.lastError);
+      } else {
+        console.log('Nickname actualizado:', updatedNickname);
+      }
+    });
+  });
+}
+
+
+const elemento = document.getElementById('game-wrap');
+
+// Crear una instancia de MutationObserver
+const observer = new MutationObserver((mutationsList, observer) => {
+  for (const mutation of mutationsList) {
+    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+      const displayValue = window.getComputedStyle(elemento).getPropertyValue('display');
+      console.log('El valor de display ha cambiado a:', displayValue);
+    }
+  }
+});

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Â2𝗚 Connect",
-  "version": "1.2",
+  "name": "Online Worms",
+  "version": "1.5.1",
   "description": "Customize wormate.io appearance and functionalities, team chat.",
   "icons": {
     "16": "icon16.png",
@@ -42,11 +42,14 @@
       "http://45.173.12.90:3000/*",
       "https://www.iconfinder.com/*",
       "http://localhost:3000/*",
-      "http://192.168.205.243:3000/*"
+      "http://localhost:3001/*"
     ],
+    "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src *"
+    },
   "web_accessible_resources": [
     {
-      "resources": ["banner.png", "popup.js", "custom_game.js", "frame.html", "frame.js"],
+      "resources": ["banner.png", "popup.js", "custom_game.js", "frame.html", "frame.js", "socket.io.min.js"],
       "matches": ["https://wormate.io/*"]
     }
   ]

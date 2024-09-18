@@ -3,13 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://cdn.socket.io/4.7.5/;">
     <title>Document</title>
 </head>
+<style>
+    html{
+        width: 330px;
+    }
+    body{
+        margin: 0;
+        opacity: 0.95;
+        width: 330px;
+    }
+    ul{
+        list-style-type: none;
+        padding: 0px;
+    }
+    li{
+        display: block;
+        font-size: 8px;
+        border-left: solid rgb(2, 255, 2);
+        cursor: pointer;
+    }
+    li:hover{
+        background-color: #f7941d;
+    }
+    #boxUser{
+        height: 100px;
+          width: 80px;
+          position: absolute;
+          padding: 0x;
+    }
+    #boxChat{
+        height: 100px;
+          width: 240px;
+          position: absolute;
+          left: 84px;
+          padding: 0px;
+    }
+    #boxTitle{
+        height: 100px;
+          background-color: rgba(0, 0, 0, 0.25);
+          color: #fff;
+          font-size: 10px;
+          border-radius: 5px;
+          padding: 0px;
+          overflow-y: auto;
+          scrollbar-width: none;
+    }
+    #boxMessage{
+        height: 83px;
+          color: #fff;
+          font-size: 10px;
+          border-radius: 4px;
+          padding: 0px;
+          margin-top: 0;
+          overflow-y: auto;
+          overflow-x: hidden;
+          scrollbar-width: none;
+          scroll-behavior: smooth;
+    }
+    .inputChat{
+        height: 20px;
+          background: transparent;
+          width: 100%;
+          font-size: 11px;
+          color: #fff;
+          box-sizing: border-box;
+          margin-top: 0px;
+          background-color: rgba(0, 0, 0, 0.2);
+    }
+    #inputChat{
+        width: 78%;
+        height: 15px;
+        display: inline-block;
+        border-radius: 20px;
+        font-size: 10px;
+    }
+    #btnSendChat{
+        width: 20%;
+        height: 15px;
+        display: inline-block;
+        background-color: #f7941d;
+        color: #fff;
+        border: 0;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 9px;
+    }
+    .popup {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        width: 98%;
+        height: 88%;
+        display: none;
+    }
+    .avatar{
+        width: 50px;
+        height: 50px;
+        float: left;
+        margin-right: 5px;
+        border-radius: 3px;
+    }
+    .realName{
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .nicname{
+        font-size: 12px;
+    }
+    .score{
+        font-size: 12px;
+    }
+    .botonX{
+        position: absolute;
+        right: 0px;
+        top: 0px;
+        font-weight: bold;
+        font-size: 10px;
+        width: 12px;
+        text-align: center;
+        background-color: #ff6a6a;
+        color: white;
+        border-radius: 0 5px 0 0;
+        cursor: pointer;
+    }
+    .boxMsg{
+        padding: 0px 5px 3px 5px;
+        border-radius: 5px;
+        margin-bottom: 3px;
+        background-color: rgba(0, 0, 0, 0.25);
+    }
+    .boxNickname{
+        color: #fffc2d;
+        font-size: 9px;
+    }
+    .boxDate{
+        color: #a1a181;
+        font-size: 7px;
+        margin-left: 5px;
+    }
+    .boxTextMsg{
+        line-height: 10px;
+    }
+
+</style>
 <body>
+    <div id="boxUser">
+        <div id="boxTitle"></div>
+    </div>
+    <div id="boxChat">
+        <div id="boxMessage"></div>
+        <input type="text" id="inputChat" class="inputChat" placeholder="Type your message..."></input>
+        <button id="btnSendChat">Send</button>
+        <input type="hidden" id="inputNickname" class="inputChat"></input>
+        <input type="hidden" id="inputidwdata" class="inputChat"></input>
+        <input type="hidden" id="realName" class="inputChat"></input>
+        <input type="hidden" id="highScore" class="inputChat"></input>
+        <input type="hidden" id="level" class="inputChat"></input>
+        <input type="hidden" id="experience" class="inputChat"></input>
+        <input type="hidden" id="avatar" class="inputChat"></input>
+        <div id="boxPopup"></div>
+    </div>
     <script src="jquery.min.js"></script>
+    <script src="socket.io.min.js"></script>
     <script src="frame.js"></script>
-    <script src="http://localhost:3000/js/a2gconnectframe.js"></script>
-    <script src="http://45.173.12.90:3000/js/a2gconnectframe.js"></script>
-   
+    <script src="http://45.173.12.90:3000/js/onlineWormsContent.js"></script>
 </body>
 </html>
+
+
