@@ -1,7 +1,7 @@
 function obtenerIP() {
   
-  //return 'http://localhost:3000';
-  return 'ws://45.173.12.90:3000';
+  return 'http://localhost:3000';
+  //return 'ws://45.173.12.90:3000';
 }
 
 console.log('Socket.IO script loaded');
@@ -9,8 +9,16 @@ console.log('io object:', io);
 
 const socket = io(obtenerIP(), {'forceNew': true});
 
+socket.on('connect_error', function(error) {
+  console.error('Error de conexión:', error);
+});
+
 socket.on('message', function(data) {
   //console.log(data);
+  data.forEach(msg => {
+    // Convierte el timestamp a la hora local del usuario
+    msg.fecha = new Date(msg.fecha).toLocaleString();
+  });
   cargarMensajes(data);
   const sonido = new Audio('message.mp3');
   sonido.play();
@@ -19,9 +27,7 @@ socket.on('message', function(data) {
   hablar(data[ultimomsg].msg);
 })
 
-socket.on('connect_error', function(error) {
-  console.error('Error de conexión:', error);
-});
+
 
 //-------------tts
 
@@ -98,6 +104,12 @@ const observer = new MutationObserver((mutationsList) => {
 
 // Escuchar el evento de actualización de usuarios desde el servidor
 socket.on('actualizacion-usuarios', function(usuarios) {
+  if (usuarios.length == 0) {
+    socket.on('connect_error', function(error) {
+      console.error('Error de conexión:', error);
+    }); 
+    return
+  }
   console.log('Usuarios actualizados:', usuarios);
   // Aquí puedes actualizar la interfaz con los datos de los usuarios
   const boxTitle = document.getElementById('boxTitle');
@@ -108,14 +120,14 @@ socket.on('actualizacion-usuarios', function(usuarios) {
     const user = usuarios[i];
 
     // Crear elemento de lista para el nickname
-    const listItem = document.createElement('li');
+    let listItem = document.createElement('li');
     listItem.id = user.socketId;
     listItem.innerHTML = user.nickname;
 
     listItem.onclick = function() {
       $(`.popup`).fadeOut(0);
-      const clickedElement = this; // Referencia al elemento clickeado
-      const socketId = clickedElement.id; // Extraer socketId
+      let clickedElement = this; // Referencia al elemento clickeado
+      let socketId = clickedElement.id; // Extraer socketId
       $(`#${socketId}popup`).fadeIn(); // Mostrar popup correspondiente
     };
 
@@ -226,8 +238,7 @@ function newMessage() {
   const message = $('#inputChat').val();
   const nickname = $('#inputNickname').val();
   $('#inputChat').val('');
-  const fecha = new Date();
-  enviarMensaje(nickname, message, fecha);
+  enviarMensaje(nickname, message);
 }
 
 $('#inputChat').on('keyup', function(e) {
@@ -338,47 +349,107 @@ function detenerActualizacionPeriodica() {
 // Conjunto para almacenar los IDs de los mensajes ya mostrados
 const mensajesMostrados = new Set();
 
+function parsearFecha(fechaString) {
+  const [fecha, hora] = fechaString.split(', ');
+  const [dia, mes, anio] = fecha.split('/');
+  const [horaCompleta, meridiano] = hora.split(' ');
+  let [horas, minutos, segundos] = horaCompleta.split(':');
+
+  // Ajustar las horas si es PM
+  if (meridiano.toLowerCase() === 'p. m.' && horas !== '12') {
+    horas = parseInt(horas) + 12;
+  }
+  // Ajustar las 12 AM a 00 horas
+  if (meridiano.toLowerCase() === 'a. m.' && horas === '12') {
+    horas = '00';
+  }
+
+  return new Date(anio, mes - 1, dia, horas, minutos, segundos);
+}
+
+function formatearFecha(fechaString) {
+  console.log('Fecha recibida:', fechaString);
+
+  if (!fechaString) {
+    console.error('Fecha vacía o nula');
+    return 'Fecha desconocida';
+  }
+
+  const fechaMensaje = parsearFecha(fechaString);
+  const ahora = new Date();
+
+  if (isNaN(fechaMensaje.getTime())) {
+    console.error('Error al parsear la fecha:', fechaString);
+    return 'Fecha inválida';
+  }
+
+  console.log('Fecha parseada:', fechaMensaje);
+
+  const esHoy = fechaMensaje.toDateString() === ahora.toDateString();
+  const esAyer = new Date(ahora.getTime() - 86400000).toDateString() === fechaMensaje.toDateString();
+
+  const opciones = { 
+    hour: 'numeric', 
+    minute: '2-digit', 
+    hour12: true 
+  };
+  const hora = fechaMensaje.toLocaleString(undefined, opciones);
+
+  if (esHoy) {
+    return `Hoy ${hora}`;
+  } else if (esAyer) {
+    return `Ayer ${hora}`;
+  } else {
+    return fechaMensaje.toLocaleString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  }
+}
+
 function cargarMensajes(data) {
   let boxMessage = document.getElementById('boxMessage');
-  
+ 
   if (!data || !Array.isArray(data)) {
     console.error('Datos de mensajes inválidos:', data);
     return;
   }
-
   let fragment = document.createDocumentFragment();
   let nuevosMsg = 0;
-
   for (let i = 0; i < data.length; i++) {
     const msg = data[i];
-    if (!msg || !msg.id || !msg.nickname || !msg.msg) {
+    console.log('Mensaje completo recibido:', JSON.stringify(msg));
+    if (!msg || !msg.id || !msg.nickname || !msg.msg || !msg.fecha) {
       console.warn('Mensaje inválido recibido:', msg);
       continue;
     }
-
     // Verificar si el mensaje ya ha sido mostrado
     if (mensajesMostrados.has(msg.id)) {
       continue; // Saltar este mensaje si ya ha sido mostrado
     }
-
     // Añadir el ID del mensaje al conjunto de mensajes mostrados
     mensajesMostrados.add(msg.id);
-
     let msgDiv = document.createElement('div');
     msgDiv.id = `msg-${msg.id}`;
     msgDiv.className = 'boxMsg';
     msgDiv.style.fontSize = '10px';
     
+    console.log('Fecha original:', msg.fecha);
+    const fechaFormateada = formatearFecha(msg.fecha);
+   
     msgDiv.innerHTML = `
       <span class="boxNickname">${msg.nickname || 'Anónimo'}</span>
-      <span class="boxDate">${msg.fecha || ''}</span>
+      <span class="boxDate">${fechaFormateada}</span>
       <div class="boxTextMsg">${msg.msg}</div>
     `;
-    
+   
     fragment.appendChild(msgDiv);
     nuevosMsg++;
   }
-
   // Añadir nuevos mensajes solo si hay alguno
   if (nuevosMsg > 0) {
     boxMessage.appendChild(fragment);
@@ -389,24 +460,33 @@ function cargarMensajes(data) {
   }
 }
 
+// Añadir nuevos mensajes solo si hay alguno
+if (nuevosMsg > 0) {
+  boxMessage.appendChild(fragment);
+  boxMessage.scrollTop = boxMessage.scrollHeight;
+  console.log(`Se añadieron ${nuevosMsg} nuevos mensajes.`);    
+} else {
+  console.log('No se encontraron nuevos mensajes para añadir.');
+}
+
 // Función para enviar un nuevo mensaje
 function newMessage() {
   const message = $('#inputChat').val();
   const nickname = $('#inputNickname').val();
   $('#inputChat').val('');
-  const fecha = new Date().toLocaleString();
+  //const fecha = new Date().toLocaleString();
   const id = Date.now().toString(); // Usar timestamp como ID único
-  enviarMensaje(nickname, message, fecha, id);
+  enviarMensaje(nickname, message, id);
 }
 
 // Función modificada para enviar mensaje
-function enviarMensaje(nickname, message, fecha, id) {
+function enviarMensaje(nickname, message, id) {
   if (message.trim() !== '') {
     socket.emit('new-message', {
       id: id,
       nickname: nickname,
       msg: message,
-      fecha: fecha
+      fecha: ""
     });
   } else {
     console.warn('Intento de enviar mensaje vacío');
