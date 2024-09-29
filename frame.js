@@ -102,90 +102,84 @@ const observer = new MutationObserver((mutationsList) => {
 //--------------------------------------------
 
 
+// Objeto para almacenar todos los usuarios únicos
+let todosLosUsuarios = {};
+
 // Escuchar el evento de actualización de usuarios desde el servidor
 socket.on('actualizacion-usuarios', function(usuarios) {
-  if (usuarios.length == 0) {
-    socket.on('connect_error', function(error) {
-      console.error('Error de conexión:', error);
-    }); 
-    return
-  }
   console.log('Usuarios actualizados:', usuarios);
-  // Aquí puedes actualizar la interfaz con los datos de los usuarios
-  const boxTitle = document.getElementById('boxTitle');
-  boxTitle.innerHTML = '';
-  const boxPopup = document.getElementById('boxPopup');
-  boxPopup.innerHTML = '';
-  for (let i = 0; i < usuarios.length; i++) {
-    const user = usuarios[i];
+  
+  if (!Array.isArray(usuarios) || usuarios.length === 0) {
+    console.error('No se recibieron usuarios válidos');
+    return;
+  }
 
+  // Actualizar el objeto todosLosUsuarios con los nuevos usuarios
+  usuarios.forEach(user => {
+    todosLosUsuarios[user.socketId] = user;
+  });
+
+  actualizarInterfazUsuarios();
+});
+
+function actualizarInterfazUsuarios() {
+  const boxTitle = document.getElementById('boxTitle');
+  const boxPopup = document.getElementById('boxPopup');
+
+  // Limpiar contenido existente
+  boxTitle.innerHTML = '';
+  boxPopup.innerHTML = '';
+
+  Object.values(todosLosUsuarios).forEach(user => {
     // Crear elemento de lista para el nickname
     let listItem = document.createElement('li');
-    listItem.id = user.socketId;
-    listItem.innerHTML = user.nickname;
+    listItem.id = `user-${user.socketId}`;
+    listItem.textContent = user.nickname;
 
-    listItem.onclick = function() {
-      $(`.popup`).fadeOut(0);
-      let clickedElement = this; // Referencia al elemento clickeado
-      let socketId = clickedElement.id; // Extraer socketId
-      $(`#${socketId}popup`).fadeIn(); // Mostrar popup correspondiente
-    };
-
-    $('#boxTitle').append(listItem);
-
+    // Crear popup
     let popup = document.createElement('div');
-    popup.id = usuarios[i].socketId+'popup';
-    
-    let elemento = document.getElementById('boxPopup');
-    elemento.appendChild(popup);
-    $('#'+usuarios[i].socketId+'popup').addClass('popup');
-    
-    let realName = document.createElement('div');
-    realName.id = usuarios[i].socketId+'realName';
-    realName.dataGest = 'gest';
-    realName.innerHTML = usuarios[i].realName;
-    popup.appendChild(realName);
-    $('#'+usuarios[i].socketId+'realName').addClass('realName');
+    popup.id = `popup-${user.socketId}`;
+    popup.className = 'popup';
+    popup.style.display = 'none';
 
-    let avatar = document.createElement('img');
-    avatar.id = usuarios[i].socketId+'avatar';
-    avatar.src = usuarios[i].avatar;
-    popup.appendChild(avatar);
-    $('#'+usuarios[i].socketId+'avatar').addClass('avatar');
+    popup.innerHTML = `
+      <div class="realName" data-gest="gest">${user.realName}</div>
+      <img class="avatar" src="${user.avatar}" alt="Avatar">
+      <div class="nickname">${user.nickname}</div>
+      <div class="level">Level: ${parseInt(user.level || '0').toLocaleString()}</div>
+      <div class="experience">Exp: ${(user.experience || '0').toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</div>
+      <div class="botonX">X</div>
+    `;
 
-    
-
-    let nickname = document.createElement('div');
-    nickname.id = usuarios[i].socketId+'nickname';
-    nickname.innerHTML = usuarios[i].nickname;
-    popup.appendChild(nickname);
-    $('#'+usuarios[i].socketId+'nickname').addClass('nickname');
-
-    let level = document.createElement('div');
-    level.id = usuarios[i].socketId+'level';
-    //separador de miles
-    level.innerHTML = 'Level: ' + usuarios[i].level.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    popup.appendChild(level);
-    $('#'+usuarios[i].socketId+'level').addClass('level');
-
-    let experience = document.createElement('div');
-    experience.id = usuarios[i].socketId+'experience';
-    //separador de miles
-    experience.innerHTML = 'Exp: ' + usuarios[i].experience.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    popup.appendChild(experience);
-    $('#'+usuarios[i].socketId+'experience').addClass('experience');
-
-    let botonX = document.createElement('div'); 
-    botonX.id = usuarios[i].socketId+'botonX';
-    botonX.innerHTML = 'X';
-    popup.appendChild(botonX);
-    $('#'+usuarios[i].socketId+'botonX').addClass('botonX');
-    $('#'+usuarios[i].socketId+'botonX').on('click', function() {
-      $('.popup').fadeOut();
+    // Añadir evento para mostrar/ocultar popup
+    listItem.addEventListener('click', function(event) {
+      event.stopPropagation();
+      const allPopups = document.querySelectorAll('.popup');
+      allPopups.forEach(p => p.style.display = 'none');
+      popup.style.display = 'block';
     });
 
-  }//fin for
-});
+    // Añadir evento para cerrar popup
+    const closeButton = popup.querySelector('.botonX');
+    closeButton.addEventListener('click', function(event) {
+      event.stopPropagation();
+      popup.style.display = 'none';
+    });
+
+    boxTitle.appendChild(listItem);
+    boxPopup.appendChild(popup);
+  });
+
+  // Cerrar todos los popups al hacer clic fuera de ellos
+  document.addEventListener('click', function() {
+    const allPopups = document.querySelectorAll('.popup');
+    allPopups.forEach(popup => popup.style.display = 'none');
+  });
+
+  console.log(`Se han añadido ${Object.keys(todosLosUsuarios).length} usuarios al boxTitle.`);
+}
+
+// Resto del código...
 
 //-----------------------------------------------------
 
