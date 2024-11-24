@@ -79,6 +79,7 @@ hideMerchantCont();
 
 
 
+
 function fastActivate(){
 
   const twwc = document.querySelector('.title-worm-world-connect');
@@ -96,7 +97,7 @@ function fastActivate(){
     
     let realName = document.querySelector("#mm-player-username").textContent;
 
-    guardarNickname(idwdata, realName);
+    guardarNickname();
 
     //ocultar boton y logo wwc
     let btnActivateWWC = document.querySelectorAll("#load_page_apoiador div button");
@@ -126,6 +127,7 @@ function fastActivate(){
   
 }
 fastActivate();
+
 
 function updateIframe(settings) {
   const boxFrame = document.getElementById('boxFrame');
@@ -260,26 +262,25 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 // Guardar el Ninkname en storage para ser consultado desde el archivo frame.js
 
-function guardarNickname(idwdata, realName) {
+function guardarNickname() {
   const nickname = $('#mm-params-nickname').val().trim();
-  if (nickname === '') {
-    nickname = 'Anonimo';
-  }
+  const realName = document.querySelector("#mm-player-username").textContent;
   const level = $('#mm-player-level').text();
   const experience = $('#mm-player-exp-val').text();
   const avatar = $('#mm-player-avatar').attr('src');
-/*
+
+  /*
   console.log('nickname:', nickname);
   console.log('idwdata:', idwdata);
   console.log('realName:', realName);
   console.log('level:', level);
   console.log('experience:', experience);
   console.log('avatar:', avatar);
-*/
+  */
   // Guardar los datos inmediatamente
   chrome.storage.sync.set({
     nickname,
-    idwdata,
+    //idwdata,
     realName,
     level,
     experience,
@@ -292,28 +293,10 @@ function guardarNickname(idwdata, realName) {
     }
   });
 
-  // Agregar listener para cambios futuros en el nickname
-  $('#mm-params-nickname').on('change', function() {
-    const updatedNickname = $(this).val().trim();
-    chrome.storage.sync.set({ nickname: updatedNickname }, function() {
-      if (chrome.runtime.lastError) {
-        console.error('Error al actualizar nickname:', chrome.runtime.lastError);
-      } else {
-        console.log('Nickname actualizado:', updatedNickname);
-      }
-    });
-  });
 }
 
-
-const elemento = document.getElementById('game-wrap');
-
-// Crear una instancia de MutationObserver
-const observer = new MutationObserver((mutationsList, observer) => {
-  for (const mutation of mutationsList) {
-    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-      const displayValue = window.getComputedStyle(elemento).getPropertyValue('display');
-      console.log('El valor de display ha cambiado a:', displayValue);
-    }
-  }
+$('#mm-params-nickname').change(function() {
+  guardarNickname();
 });
+
+

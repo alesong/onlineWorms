@@ -1,7 +1,8 @@
 function obtenerIP() {
   
-  return 'http://localhost:3000';
-  //return 'ws://45.173.12.90:3000';
+  //return 'http://localhost:3000';
+  return 'http://45.173.12.90:3000';
+  //return 'http://192.168.18.19:3000';
 }
 
 console.log('Socket.IO script loaded');
@@ -11,6 +12,12 @@ const socket = io(obtenerIP(), {'forceNew': true});
 
 socket.on('connect_error', function(error) {
   console.error('Error de conexión:', error);
+});
+
+socket.on('reconnect', () => {
+  console.log('Reconectado al servidor');
+  //recarga página
+  window.location.reload();
 });
 
 socket.on('message', function(data) {
@@ -110,13 +117,16 @@ socket.on('actualizacion-usuarios', function(usuarios) {
   console.log('Usuarios actualizados:', usuarios);
   
   if (!Array.isArray(usuarios) || usuarios.length === 0) {
-    console.error('No se recibieron usuarios válidos');
+    console.error('No se recibieron usuarios válidos, recargarndo página');
+    //window.location.reload();
     return;
   }
 
   // Actualizar el objeto todosLosUsuarios con los nuevos usuarios
+
   usuarios.forEach(user => {
-    todosLosUsuarios[user.socketId] = user;
+    //todosLosUsuarios[user.socketId] = user;
+    todosLosUsuarios = usuarios
   });
 
   actualizarInterfazUsuarios();
@@ -179,7 +189,7 @@ function actualizarInterfazUsuarios() {
   console.log(`Se han añadido ${Object.keys(todosLosUsuarios).length} usuarios al boxTitle.`);
 }
 
-// Resto del código...
+
 
 //-----------------------------------------------------
 
@@ -343,66 +353,10 @@ function detenerActualizacionPeriodica() {
 // Conjunto para almacenar los IDs de los mensajes ya mostrados
 const mensajesMostrados = new Set();
 
-function parsearFecha(fechaString) {
-  const [fecha, hora] = fechaString.split(', ');
-  const [dia, mes, anio] = fecha.split('/');
-  const [horaCompleta, meridiano] = hora.split(' ');
-  let [horas, minutos, segundos] = horaCompleta.split(':');
-
-  // Ajustar las horas si es PM
-  if (meridiano.toLowerCase() === 'p. m.' && horas !== '12') {
-    horas = parseInt(horas) + 12;
-  }
-  // Ajustar las 12 AM a 00 horas
-  if (meridiano.toLowerCase() === 'a. m.' && horas === '12') {
-    horas = '00';
-  }
-
-  return new Date(anio, mes - 1, dia, horas, minutos, segundos);
-}
 
 function formatearFecha(fechaString) {
   console.log('Fecha recibida:', fechaString);
-
-  if (!fechaString) {
-    console.error('Fecha vacía o nula');
-    return 'Fecha desconocida';
-  }
-
-  const fechaMensaje = parsearFecha(fechaString);
-  const ahora = new Date();
-
-  if (isNaN(fechaMensaje.getTime())) {
-    console.error('Error al parsear la fecha:', fechaString);
-    return 'Fecha inválida';
-  }
-
-  console.log('Fecha parseada:', fechaMensaje);
-
-  const esHoy = fechaMensaje.toDateString() === ahora.toDateString();
-  const esAyer = new Date(ahora.getTime() - 86400000).toDateString() === fechaMensaje.toDateString();
-
-  const opciones = { 
-    hour: 'numeric', 
-    minute: '2-digit', 
-    hour12: true 
-  };
-  const hora = fechaMensaje.toLocaleString(undefined, opciones);
-
-  if (esHoy) {
-    return `Hoy ${hora}`;
-  } else if (esAyer) {
-    return `Ayer ${hora}`;
-  } else {
-    return fechaMensaje.toLocaleString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
-  }
+  return fechaString;
 }
 
 function cargarMensajes(data) {
@@ -412,7 +366,7 @@ function cargarMensajes(data) {
     console.error('Datos de mensajes inválidos:', data);
     return;
   }
-  let fragment = document.createDocumentFragment();
+  let fragment = document.createElement('div');
   let nuevosMsg = 0;
   for (let i = 0; i < data.length; i++) {
     const msg = data[i];
@@ -421,6 +375,7 @@ function cargarMensajes(data) {
       console.warn('Mensaje inválido recibido:', msg);
       continue;
     }
+
     // Verificar si el mensaje ya ha sido mostrado
     if (mensajesMostrados.has(msg.id)) {
       continue; // Saltar este mensaje si ya ha sido mostrado
@@ -428,25 +383,31 @@ function cargarMensajes(data) {
     // Añadir el ID del mensaje al conjunto de mensajes mostrados
     mensajesMostrados.add(msg.id);
     let msgDiv = document.createElement('div');
-    msgDiv.id = `msg-${msg.id}`;
+    console.log('Mensaje a crear:', msg);
+    
+    msgDiv.id = 'msg-'+msg.id;
+    console.log('ID del mensaje:', msgDiv.id);
+    
     msgDiv.className = 'boxMsg';
     msgDiv.style.fontSize = '10px';
     
     console.log('Fecha original:', msg.fecha);
-    const fechaFormateada = formatearFecha(msg.fecha);
+    let fechaFormateada = formatearFecha(msg.fecha);
    
-    msgDiv.innerHTML = `
-      <span class="boxNickname">${msg.nickname || 'Anónimo'}</span>
-      <span class="boxDate">${fechaFormateada}</span>
-      <div class="boxTextMsg">${msg.msg}</div>
-    `;
+    msgDiv.innerHTML = '<span class="boxNickname">'+msg.nickname+'</span><span class="boxDate">'+fechaFormateada+'</span><div class="boxTextMsg">'+msg.msg+'</div>';
+
+   console.log('Mensaje HTML:', msgDiv);
    
-    fragment.appendChild(msgDiv);
+    if(fragment.appendChild(msgDiv)){
+      console.log('Mensaje añadido al fragmento');
+    }
     nuevosMsg++;
   }
   // Añadir nuevos mensajes solo si hay alguno
   if (nuevosMsg > 0) {
-    boxMessage.appendChild(fragment);
+    if(boxMessage.appendChild(fragment)){
+      console.log('Fragmento de mensajes añadido al boxMessage');
+    }
     boxMessage.scrollTop = boxMessage.scrollHeight;
     console.log(`Se añadieron ${nuevosMsg} nuevos mensajes.`);    
   } else {
@@ -454,14 +415,7 @@ function cargarMensajes(data) {
   }
 }
 
-// Añadir nuevos mensajes solo si hay alguno
-if (nuevosMsg > 0) {
-  boxMessage.appendChild(fragment);
-  boxMessage.scrollTop = boxMessage.scrollHeight;
-  console.log(`Se añadieron ${nuevosMsg} nuevos mensajes.`);    
-} else {
-  console.log('No se encontraron nuevos mensajes para añadir.');
-}
+
 
 // Función para enviar un nuevo mensaje
 function newMessage() {
@@ -486,9 +440,5 @@ function enviarMensaje(nickname, message, id) {
     console.warn('Intento de enviar mensaje vacío');
   }
 }
-
-
-
-
 
 
